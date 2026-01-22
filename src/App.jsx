@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, PenTool, CheckCircle, ArrowRight, Lightbulb, RotateCcw, Award, Mail, MessageCircle, FileText } from 'lucide-react';
 
 export default function App() {
@@ -881,6 +881,376 @@ const EMAIL_THEMES = [
   }
 ];
 
+// 意見論述テーマデータ（6テーマ）
+const ESSAY_THEMES = [
+  {
+    id: 1,
+    topic: "Do you think students should use smartphones for studying?",
+    topicJa: "学生は勉強のためにスマートフォンを使うべきだと思いますか？",
+    stances: {
+      yes: {
+        ja: "そう思う (Yes)",
+        jaText: "私は学生は勉強のためにスマートフォンを使うべきだと思います",
+        text: "I think that students should use smartphones for studying",
+        chunks: ["I think that", "students should use", "smartphones", "for studying"]
+      },
+      no: {
+        ja: "そう思わない (No)",
+        jaText: "私は学生は勉強のためにスマートフォンを使うべきではないと思います",
+        text: "I do not think that students should use smartphones for studying",
+        chunks: ["I do not think that", "students should use", "smartphones", "for studying"]
+      }
+    },
+    reasons: {
+      yes: {
+        convenient: {
+          ja: "便利だから",
+          jaText: "単語の意味を調べるのに便利です",
+          text: "it is convenient for checking the meanings of words",
+          chunks: ["it is convenient", "for checking", "the meanings of words"]
+        },
+        videos: {
+          ja: "動画で学べる",
+          jaText: "彼らは学ぶために動画を見ることができます",
+          text: "they can watch videos to learn",
+          chunks: ["they can", "watch videos", "to learn"]
+        },
+        anywhere: {
+          ja: "どこでも勉強できる",
+          jaText: "彼らはいつでもどこでも勉強できます",
+          text: "they can study anytime and anywhere",
+          chunks: ["they can study", "anytime and anywhere"]
+        }
+      },
+      no: {
+        distract: {
+          ja: "集中できない",
+          jaText: "勉強に集中するのは難しいです",
+          text: "it is difficult to concentrate on studying",
+          chunks: ["it is difficult", "to concentrate", "on studying"]
+        },
+        games: {
+          ja: "ゲームをしてしまう",
+          jaText: "彼らは勉強の代わりにゲームをしてしまうかもしれません",
+          text: "they might play games instead of studying",
+          chunks: ["they might", "play games", "instead of studying"]
+        },
+        writing: {
+          ja: "書く練習にならない",
+          jaText: "手で書くことは覚えたり理解したりするのに良いです",
+          text: "writing by hand is good for remembering and understanding",
+          chunks: ["writing by hand", "is good for", "remembering and understanding"]
+        }
+      }
+    }
+  },
+  {
+    id: 2,
+    topic: "Do you think students should have part-time jobs?",
+    topicJa: "学生はアルバイトをするべきだと思いますか？",
+    stances: {
+      yes: {
+        ja: "そう思う (Yes)",
+        jaText: "私は学生はアルバイトをするべきだと思います",
+        text: "I think that students should have part-time jobs",
+        chunks: ["I think that", "students should have", "part-time jobs"]
+      },
+      no: {
+        ja: "そう思わない (No)",
+        jaText: "私は学生はアルバイトをするべきではないと思います",
+        text: "I do not think that students should have part-time jobs",
+        chunks: ["I do not think that", "students should have", "part-time jobs"]
+      }
+    },
+    reasons: {
+      yes: {
+        experience: {
+          ja: "社会経験になる",
+          jaText: "彼らは社会について学ぶことができます",
+          text: "they can learn about society",
+          chunks: ["they can", "learn about", "society"]
+        },
+        money: {
+          ja: "お金を稼げる",
+          jaText: "彼らはお金を稼いで欲しいものを買うことができます",
+          text: "they can earn money and buy things they want",
+          chunks: ["they can", "earn money", "and buy things", "they want"]
+        },
+        communication: {
+          ja: "コミュニケーション能力",
+          jaText: "彼らは他の人とうまく話す方法を学べます",
+          text: "they can learn how to speak with others well",
+          chunks: ["they can learn", "how to speak", "with others well"]
+        }
+      },
+      no: {
+        busy: {
+          ja: "忙しくなる",
+          jaText: "彼らは忙しすぎて勉強できません",
+          text: "they are too busy to study",
+          chunks: ["they are", "too busy", "to study"]
+        },
+        grades: {
+          ja: "成績が下がる",
+          jaText: "彼らの学校の成績が下がるかもしれません",
+          text: "their school grades might go down",
+          chunks: ["their school grades", "might go down"]
+        },
+        tired: {
+          ja: "疲れる",
+          jaText: "彼らは疲れて授業中に寝てしまうかもしれません",
+          text: "they may get tired and sleep during class",
+          chunks: ["they may", "get tired", "and sleep", "during class"]
+        }
+      }
+    }
+  },
+  {
+    id: 3,
+    topic: "Do you think schools should stop wearing uniforms?",
+    topicJa: "学校は制服の着用をやめるべきだと思いますか？",
+    stances: {
+      yes: {
+        ja: "そう思う (Yes)",
+        jaText: "私は学校は制服の着用をやめるべきだと思います",
+        text: "I think that schools should stop wearing uniforms",
+        chunks: ["I think that", "schools should stop", "wearing uniforms"]
+      },
+      no: {
+        ja: "そう思わない (No)",
+        jaText: "私は学校は制服の着用をやめるべきではないと思います",
+        text: "I do not think that schools should stop wearing uniforms",
+        chunks: ["I do not think that", "schools should stop", "wearing uniforms"]
+      }
+    },
+    reasons: {
+      yes: {
+        personality: {
+          ja: "個性を出せる",
+          jaText: "生徒は自分の好きな服を着ることができます",
+          text: "students can wear clothes they like",
+          chunks: ["students can wear", "clothes", "they like"]
+        },
+        comfortable: {
+          ja: "快適だから",
+          jaText: "制服は夏は暑すぎて冬は寒すぎます",
+          text: "uniforms are too hot in summer and too cold in winter",
+          chunks: ["uniforms are", "too hot in summer", "and too cold", "in winter"]
+        },
+        washing: {
+          ja: "洗濯が大変",
+          jaText: "制服を毎日洗うのは大変です",
+          text: "it is hard to wash uniforms every day",
+          chunks: ["it is hard", "to wash uniforms", "every day"]
+        }
+      },
+      no: {
+        choice: {
+          ja: "服を選ばなくていい",
+          jaText: "彼らは朝着る服を選ぶ必要がありません",
+          text: "they do not need to choose clothes in the morning",
+          chunks: ["they do not need", "to choose clothes", "in the morning"]
+        },
+        equality: {
+          ja: "平等に見える",
+          jaText: "すべての生徒が同じに見え、それは良いことです",
+          text: "all students look the same and it is good",
+          chunks: ["all students", "look the same", "and it is good"]
+        },
+        money: {
+          ja: "お金がかからない",
+          jaText: "私服をたくさん買うのはお金がかかります",
+          text: "buying many clothes costs a lot of money",
+          chunks: ["buying many clothes", "costs", "a lot of money"]
+        }
+      }
+    }
+  },
+  {
+    id: 4,
+    topic: "Do you think high schools should have cafeterias?",
+    topicJa: "高校には食堂があるべきだと思いますか？",
+    stances: {
+      yes: {
+        ja: "そう思う (Yes)",
+        jaText: "私は高校には食堂があるべきだと思います",
+        text: "I think that high schools should have cafeterias",
+        chunks: ["I think that", "high schools should have", "cafeterias"]
+      },
+      no: {
+        ja: "そう思わない (No)",
+        jaText: "私は高校には食堂があるべきではないと思います",
+        text: "I do not think that high schools should have cafeterias",
+        chunks: ["I do not think that", "high schools should have", "cafeterias"]
+      }
+    },
+    reasons: {
+      yes: {
+        healthy: {
+          ja: "健康的な食事",
+          jaText: "彼らは健康的な食事を安く食べることができます",
+          text: "they can eat healthy food cheaply",
+          chunks: ["they can", "eat healthy food", "cheaply"]
+        },
+        convenient: {
+          ja: "便利だから",
+          jaText: "彼らは昼食を持ってくる必要がありません",
+          text: "they do not need to bring lunch",
+          chunks: ["they do not need", "to bring lunch"]
+        },
+        communication: {
+          ja: "コミュニケーション",
+          jaText: "彼らは友達と昼食を食べるのを楽しむことができます",
+          text: "they can enjoy eating lunch with their friends",
+          chunks: ["they can enjoy", "eating lunch", "with their friends"]
+        }
+      },
+      no: {
+        expensive: {
+          ja: "お金がかかる",
+          jaText: "食堂を作るには多くのお金がかかります",
+          text: "it costs a lot of money to build a cafeteria",
+          chunks: ["it costs a lot of money", "to build", "a cafeteria"]
+        },
+        space: {
+          ja: "場所がない",
+          jaText: "学校には食堂のための十分なスペースがありません",
+          text: "schools do not have enough space for a cafeteria",
+          chunks: ["schools", "do not have", "enough space", "for a cafeteria"]
+        },
+        bento: {
+          ja: "弁当が良い",
+          jaText: "生徒はお弁当の方が好きです",
+          text: "students prefer bringing their own lunch",
+          chunks: ["students prefer", "bringing their own lunch"]
+        }
+      }
+    }
+  },
+  {
+    id: 5,
+    topic: "Do you think people should read e-books instead of paper books?",
+    topicJa: "人々は紙の本の代わりに電子書籍を読むべきだと思いますか？",
+    stances: {
+      yes: {
+        ja: "そう思う (Yes)",
+        jaText: "私は人々は電子書籍を読むべきだと思います",
+        text: "I think that people should read e-books",
+        chunks: ["I think that", "people should read", "e-books"]
+      },
+      no: {
+        ja: "そう思わない (No)",
+        jaText: "私は人々は紙の本を読むべきだと思います",
+        text: "I do not think that people should read e-books",
+        chunks: ["I do not think that", "people should read", "e-books"]
+      }
+    },
+    reasons: {
+      yes: {
+        many: {
+          ja: "たくさん持ち運べる",
+          jaText: "彼らは一つのデバイスでたくさんの本を持ち運べます",
+          text: "they can carry many books in one device",
+          chunks: ["they can", "carry many books", "in one device"]
+        },
+        light: {
+          ja: "軽い",
+          jaText: "タブレットは紙の本よりも軽いです",
+          text: "tablets are lighter than paper books",
+          chunks: ["tablets are", "lighter than", "paper books"]
+        },
+        eco: {
+          ja: "環境に良い",
+          jaText: "紙を使わないので木を切る必要がありません",
+          text: "we do not need to cut down trees",
+          chunks: ["we do not need", "to cut down", "trees"]
+        }
+      },
+      no: {
+        eyes: {
+          ja: "目が疲れる",
+          jaText: "長時間画面を見るのは目に悪いです",
+          text: "looking at a screen for a long time is bad for their eyes",
+          chunks: ["looking at a screen", "for a long time", "is bad for", "their eyes"]
+        },
+        paper: {
+          ja: "紙の感覚",
+          jaText: "多くの人はページをめくる感覚が好きです",
+          text: "many people like the feeling of turning pages",
+          chunks: ["many people", "like the feeling", "of turning pages"]
+        },
+        battery: {
+          ja: "電池が必要",
+          jaText: "読むために電気が必要です",
+          text: "they need electricity to read",
+          chunks: ["they need", "electricity", "to read"]
+        }
+      }
+    }
+  },
+  {
+    id: 6,
+    topic: "Do you think students should do volunteer work?",
+    topicJa: "生徒はボランティア活動をするべきだと思いますか？",
+    stances: {
+      yes: {
+        ja: "そう思う (Yes)",
+        jaText: "私は生徒はボランティア活動をするべきだと思います",
+        text: "I think that students should do volunteer work",
+        chunks: ["I think that", "students should do", "volunteer work"]
+      },
+      no: {
+        ja: "そう思わない (No)",
+        jaText: "私は生徒はボランティア活動をするべきではないと思います",
+        text: "I do not think that students should do volunteer work",
+        chunks: ["I do not think that", "students should do", "volunteer work"]
+      }
+    },
+    reasons: {
+      yes: {
+        help: {
+          ja: "人を助ける",
+          jaText: "人を助けることはとても大切です",
+          text: "helping people is very important",
+          chunks: ["helping people", "is very important"]
+        },
+        experience: {
+          ja: "良い経験になる",
+          jaText: "彼らは学校ではできない多くのことを学べます",
+          text: "they can learn many things that they cannot do at school",
+          chunks: ["they can learn", "many things", "that they cannot do", "at school"]
+        },
+        community: {
+          ja: "地域のためになる",
+          jaText: "彼らは地域社会をより良くすることができます",
+          text: "they can make their local community better",
+          chunks: ["they can make", "their local community", "better"]
+        }
+      },
+      no: {
+        busy: {
+          ja: "忙しい",
+          jaText: "彼らは部活や勉強で忙しいです",
+          text: "they are busy with club activities and studying",
+          chunks: ["they are busy with", "club activities", "and studying"]
+        },
+        free: {
+          ja: "自由時間がない",
+          jaText: "彼らはリラックスするための自由時間が必要です",
+          text: "they need free time to relax",
+          chunks: ["they need", "free time", "to relax"]
+        },
+        force: {
+          ja: "強制すべきでない",
+          jaText: "ボランティアは強制されるべきではありません",
+          text: "volunteering should not be forced",
+          chunks: ["volunteering", "should not", "be forced"]
+        }
+      }
+    }
+  }
+];
+
 function PracticeSection({ mode }) {
   // Email State - Interactive mode
   const [selectedTheme, setSelectedTheme] = useState(0);
@@ -889,13 +1259,38 @@ function PracticeSection({ mode }) {
   const [question1Choice, setQuestion1Choice] = useState("reservation");
   const [question2Choice, setQuestion2Choice] = useState("location");
 
-  // Opinion Essay State
-  const [opTopic, setOpTopic] = useState("students should use smartphones for studying");
-  const [opStance, setOpStance] = useState("think");
-  const [opReason1, setOpReason1] = useState("it is convenient for checking words");
-  const [opReason2, setOpReason2] = useState("they can watch videos to learn");
+  // Essay State - Interactive mode
+  const [selectedEssayThemeId, setSelectedEssayThemeId] = useState(0);
+  const [essayStance, setEssayStance] = useState("yes");
+  const [essayReason1, setEssayReason1] = useState("convenient"); // 初期値は後でuseEffectで制御
+  const [essayReason2, setEssayReason2] = useState("videos"); // 初期値は後でuseEffectで制御
 
   const theme = EMAIL_THEMES[selectedTheme];
+  const essayTheme = ESSAY_THEMES[selectedEssayThemeId];
+
+  // エッセイテーマ変更時の初期化
+  useEffect(() => {
+    if (essayTheme) {
+      setEssayStance("yes");
+      // 理由の初期キーを取得（最初のキー）
+      const firstReasonKey = Object.keys(essayTheme.reasons.yes)[0];
+      const secondReasonKey = Object.keys(essayTheme.reasons.yes)[1];
+      setEssayReason1(firstReasonKey);
+      setEssayReason2(secondReasonKey);
+    }
+  }, [selectedEssayThemeId]);
+
+  // スタンス変更時の理由リセット
+  useEffect(() => {
+    if (essayTheme && essayTheme.reasons[essayStance]) {
+      const reasons = essayTheme.reasons[essayStance];
+      const keys = Object.keys(reasons);
+      if (keys.length >= 2) {
+        setEssayReason1(keys[0]);
+        setEssayReason2(keys[1]);
+      }
+    }
+  }, [essayStance, selectedEssayThemeId]);
 
   const generateEmail = () => {
     const opinion = theme.opinions[opinionChoice]?.text || "";
@@ -912,11 +1307,28 @@ Best wishes,`;
   };
 
   const generateEssay = () => {
-    const stanceText = opStance === "think" ? "think" : "do not think";
-    return `I ${stanceText} that ${opTopic}.
-First, ${opReason1}.
-Second, ${opReason2}.
-For these reasons, I ${stanceText} that ${opTopic}.`;
+    if (!essayTheme) return "";
+
+    // 意見
+    const stanceObj = essayTheme.stances[essayStance];
+    const opinionText = stanceObj?.text || "";
+
+    // 理由（スタンスに応じて取得）
+    const reasonsObj = essayTheme.reasons[essayStance];
+    const reason1Text = reasonsObj[essayReason1]?.text || "";
+    const reason2Text = reasonsObj[essayReason2]?.text || "";
+
+    // 意見の文から "I think that" などを除いたトピック部分を取得するのは難しいので
+    // textそのものを使います。文脈に合わせて接続詞などを調整します。
+    // ここではシンプルに、選択されたテキストを並べます。
+
+    // データ定義を見直すと、textに完全な文が入っているので、それをそのまま使うのが良さそうです。
+    // ただし、課題の形式 "I think that..." に合わせるため、データもそれに合わせて作りました。
+
+    return `${opinionText}.
+First, ${reason1Text}.
+Second, ${reason2Text}.
+For these reasons, ${opinionText}.`;
   };
 
   const currentText = mode === 'email' ? generateEmail() : generateEssay();
@@ -1022,35 +1434,67 @@ For these reasons, I ${stanceText} that ${opTopic}.`;
     );
   }
 
+  if (!essayTheme) {
+    return <div className="p-4 text-center text-slate-500">テーマデータを読み込み中...</div>;
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* エッセイモード */}
+      <div className="bg-white p-4 rounded-xl shadow border border-indigo-200">
+        <label className="block text-sm font-bold text-indigo-800 mb-2">📚 テーマを選択</label>
+        <select
+          value={selectedEssayThemeId}
+          onChange={e => setSelectedEssayThemeId(Number(e.target.value))}
+          className="w-full p-3 border-2 border-indigo-300 rounded-lg text-lg font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+        >
+          {ESSAY_THEMES.map((t, i) => (
+            <option key={t.id} value={i}>{t.id}. {t.topic}</option>
+          ))}
+        </select>
+        <p className="mt-2 text-sm text-slate-600 bg-slate-50 p-2 rounded">
+          🇯🇵 {essayTheme.topicJa}
+        </p>
+      </div>
+
       <div className="bg-white p-6 rounded-xl shadow border border-indigo-200">
         <h3 className="font-bold text-lg mb-4 text-indigo-800 flex items-center gap-2">
           <PenTool className="w-5 h-5" />
           意見論述作成
         </h3>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">トピック (Do you think that...)</label>
-            <input type="text" value={opTopic} onChange={e => setOpTopic(e.target.value)} className="w-full p-2 border rounded" />
-          </div>
+        <div className="grid gap-4">
+          {/* 意見選択 */}
+          <SentenceBuilder
+            label="1️⃣ 自分の意見を選択"
+            color="indigo"
+            options={essayTheme.stances}
+            selectedKey={essayStance}
+            onSelect={setEssayStance}
+            suffix="."
+          />
 
-          <div className="flex gap-2 mb-4">
-            <button onClick={() => setOpStance('think')} className={`px-4 py-1 rounded text-sm ${opStance === 'think' ? 'bg-indigo-600 text-white' : 'bg-slate-100'}`}>Yes</button>
-            <button onClick={() => setOpStance('not_think')} className={`px-4 py-1 rounded text-sm ${opStance === 'not_think' ? 'bg-red-500 text-white' : 'bg-slate-100'}`}>No</button>
-          </div>
+          {/* 理由1選択 */}
+          <SentenceBuilder
+            label="2️⃣ 理由1を選択"
+            color="pink"
+            options={essayTheme.reasons[essayStance]}
+            selectedKey={essayReason1}
+            onSelect={setEssayReason1}
+            prefix="First,"
+            suffix="."
+          />
 
-          <div className="bg-indigo-50 p-3 rounded-lg space-y-3">
-            <div>
-              <label className="block text-xs font-bold text-indigo-800 mb-1">理由 1</label>
-              <input type="text" value={opReason1} onChange={e => setOpReason1(e.target.value)} className="w-full p-2 border border-indigo-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-indigo-800 mb-1">理由 2</label>
-              <input type="text" value={opReason2} onChange={e => setOpReason2(e.target.value)} className="w-full p-2 border border-indigo-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none" />
-            </div>
-          </div>
+          {/* 理由2選択 */}
+          <SentenceBuilder
+            label="3️⃣ 理由2を選択"
+            color="purple"
+            options={essayTheme.reasons[essayStance]}
+            selectedKey={essayReason2}
+            onSelect={setEssayReason2}
+            prefix="Second,"
+            suffix="."
+          />
         </div>
       </div>
       <OutputArea text={currentText} wordCount={wordCount} target={targetCount} />
